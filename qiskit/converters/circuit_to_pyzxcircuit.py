@@ -79,9 +79,17 @@ def gate_to_pyzxgate(gate, qcqubits):
         return pyzxgates.T(qubits2idxs(gatequbits, qcqubits))
     elif gate.name == "tdg":
         return pyzxgates.T(qubits2idxs(gatequbits, qcqubits), True)
+    elif gate.name == "h":
+        return pyzxgates.HAD(qubits2idxs(gatequbits, qcqubits))
     elif gate.name == "cx":
         idxs = qubits2idxs(gatequbits, qcqubits)
         return pyzxgates.CNOT(idxs[0], idxs[1])
+    elif gate.name == "cz":
+        idxs = qubits2idxs(gatequbits, qcqubits)
+        return pyzxgate.CZ(idxs[0], idxs[1])
+    elif gate.name == "swap":
+        idxs = qubits2idxs(gatequbits, qcqubits)
+        return pyzxgates.SWAP(idxs[0], idxs[1])
     return None
 
 
@@ -96,4 +104,5 @@ def qubits2idxs(gatequbits, qcqubits):
     Returns:
         list or range: the indices
     """
-    return [qcqubits[gatequbit] for gatequbit in gatequbits]
+    ret = [qcqubits[gatequbit] for gatequbit in gatequbits]
+    return ret[0] if len(ret) == 1 else ret
