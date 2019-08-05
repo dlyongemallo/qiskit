@@ -35,7 +35,13 @@ def circuit_to_pyzxcircuit(qc):
     final = [qc.data[0], pyzxcircuit_list[0], qc.data[5], qc.data[6], pyzxcircuit_list[1], qc.data[20]]
     # for inverse, keep track of index_in_pyzxcircuit_list
     for i in range(0,len(qc.data)):
-        # see if to barrier
+        gate = qc.data[i][0]
+        gatequbits = qc.data[i][1]
+        pyzxgate = gate_to_pyzxgate(gate, gatequbits, qc.qubits)
+        if pyzxgate is None:  # gate not in pyzxgate set
+            is_qc += [i]
+        else:
+            pyzxcircuit.add_gate
 
     pyzxcircuit = Circuit(len(qc.qubits), qc.name + '_' + str(num_pyzxcircuits))
 
@@ -53,7 +59,8 @@ def circuit_to_pyzxcircuit(qc):
 
     return pyzxcircuit
 
-def gate_to_pyzxgate(gate, qcqubits):
+
+def gate_to_pyzxgate(gate, gatequbits, qcqubits):
     """Converts a Qiskit ``Gate`` to a PyZX Gate(s).  If not convertible, returns None.
 
     Args:
