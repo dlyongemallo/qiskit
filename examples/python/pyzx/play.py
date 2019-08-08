@@ -49,8 +49,9 @@ sim_result = job_sim.result()
 print("\nPrint all gates:")
 [print(dat) for dat in qc.data]
 
+qasm = qc.qasm()
 print("\nPrint QASM:")
-print(qc.qasm())
+print(qasm)
 
 # Draw the circuit
 print(qc)
