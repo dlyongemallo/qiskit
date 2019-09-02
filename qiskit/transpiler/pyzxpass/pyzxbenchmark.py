@@ -25,24 +25,27 @@ from qiskit import execute
 from qiskit.quantum_info.operators.predicates import matrix_equal
 
 
-def pyzxbenchmark(qcs, benchmarkname):
+def pyzxbenchmark(qcs, benchmarkname, alwaysDecompose=False):
     """time, benchmark, opts, params"""
     simulator = BasicAer.get_backend('unitary_simulator')
     time_str = datetime.now().isoformat()
     now_dict = {'time': time_str, 'benchmark': benchmarkname, 'size': np.zeros((4,0)), 'depth': np.zeros((4,0)), 'c count': np.zeros((4,0))}
     for qc in qcs:
-        pyzx_co_qasm = qiskit_transpiler_pass(qc.qasm())
-        pyzx_de_qasm = qiskit_transpiler_pass(qc.decompose().qasm())
-        if pyzx_co_qasm is None and pyzx_de_qasm is None:
-            continue
-        elif pyzx_co_qasm is None:
-            pyzx_qc = qc.from_qasm_str(pyzx_de_qasm)
-        elif pyzx_de_qasm is None:
-            pyzx_qc = qc.from_qasm_str(pyzx_co_qasm)
+        if alwaysDecompose:
+            pyzx_qc = qc.from_qasm_str(qiskit_transpiler_pass(qc.decompose().qasm()))
         else:
-            pyzx_co_qc = qc.from_qasm_str(qiskit_transpiler_pass(qc.qasm()))
-            pyzx_de_qc = qc.from_qasm_str(qiskit_transpiler_pass(qc.decompose().qasm()))
-            pyzx_qc = pyzx_co_qc if pyzx_co_qc.depth() <= pyzx_de_qc.depth() else pyzx_de_qc
+            pyzx_co_qasm = qiskit_transpiler_pass(qc.qasm())
+            pyzx_de_qasm = qiskit_transpiler_pass(qc.decompose().qasm())
+            if pyzx_co_qasm is None and pyzx_de_qasm is None:
+                continue
+            elif pyzx_co_qasm is None:
+                pyzx_qc = qc.from_qasm_str(pyzx_de_qasm)
+            elif pyzx_de_qasm is None:
+                pyzx_qc = qc.from_qasm_str(pyzx_co_qasm)
+            else:
+                pyzx_co_qc = qc.from_qasm_str(pyzx_co_qasm)
+                pyzx_de_qc = qc.from_qasm_str(pyzx_de_qasm)
+                pyzx_qc = pyzx_co_qc if pyzx_co_qc.depth() <= pyzx_de_qc.depth() else pyzx_de_qc
         opt2_qc = qiskit.transpile(qc, basis_gates=['u3', 'cx'], optimization_level=2)
         best_qc = qiskit.transpile(pyzx_qc, basis_gates=['u3', 'cx'], optimization_level=2)
         now_dict['size'] = np.hstack((now_dict['size'], np.array([[circ.size()] for circ in [qc, pyzx_qc, opt2_qc, best_qc]])))
