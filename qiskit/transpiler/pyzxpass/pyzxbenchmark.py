@@ -25,12 +25,13 @@ from qiskit import execute
 from qiskit.quantum_info.operators.predicates import matrix_equal
 
 
-def pyzxbenchmark(qcs, benchmarkname, alwaysDecompose=False):
+def pyzxbenchmark(qcs, benchmarkname, alwaysDecompose=False, names=[]):
     """time, benchmark, opts, params"""
     simulator = BasicAer.get_backend('unitary_simulator')
     time_str = datetime.now().isoformat()
     now_dict = {'time': time_str, 'benchmark': benchmarkname, 'size': np.zeros((4,0)), 'depth': np.zeros((4,0)), 'c count': np.zeros((4,0))}
-    for qc in qcs:
+    for i in range(len(qcs)):
+        qc = qcs[i]
         if alwaysDecompose:
             pyzx_qc = qc.from_qasm_str(qiskit_transpiler_pass(qc.decompose().qasm()))
         else:
@@ -47,17 +48,27 @@ def pyzxbenchmark(qcs, benchmarkname, alwaysDecompose=False):
                 pyzx_de_qc = qc.from_qasm_str(pyzx_de_qasm)
                 pyzx_qc = pyzx_co_qc if pyzx_co_qc.depth() <= pyzx_de_qc.depth() else pyzx_de_qc
         opt2_qc = qiskit.transpile(qc, basis_gates=['u3', 'cx'], optimization_level=2)
-        best_qc = qiskit.transpile(pyzx_qc, basis_gates=['u3', 'cx'], optimization_level=2)
-        now_dict['size'] = np.hstack((now_dict['size'], np.array([[circ.size()] for circ in [qc, pyzx_qc, opt2_qc, best_qc]])))
-        now_dict['depth'] = np.hstack((now_dict['depth'], np.array([[circ.depth()] for circ in [qc, pyzx_qc, opt2_qc, best_qc]])))
-        now_dict['c count'] = np.hstack((now_dict['c count'], np.array([[circ.qasm().count('cx') + circ.qasm().count('cz')] for circ in [qc, pyzx_qc, opt2_qc, best_qc]])))
+        both_qc = qiskit.transpile(pyzx_qc, basis_gates=['u3', 'cx'], optimization_level=2)
+        now_dict['size'] = np.hstack((now_dict['size'], np.array([[circ.size()] for circ in [qc, pyzx_qc, opt2_qc, both_qc]])))
+        now_dict['depth'] = np.hstack((now_dict['depth'], np.array([[circ.depth()] for circ in [qc, pyzx_qc, opt2_qc, both_qc]])))
+        now_dict['c count'] = np.hstack((now_dict['c count'], np.array([[circ.qasm().count('cx') + circ.qasm().count('cz')] for circ in [qc, pyzx_qc, opt2_qc, both_qc]])))
         qc = qc.from_qasm_str('\n'.join(['' if line.startswith('measure') else line for line in qc.qasm().splitlines()]))
         pyzx_qc = pyzx_qc.from_qasm_str('\n'.join(['' if line.startswith('measure') else line for line in pyzx_qc.qasm().splitlines()]))
-        result = execute([qc, pyzx_qc], simulator).result()
-        qc_mat, pyzx_qc_mat = result.get_unitary(qc), result.get_unitary(pyzx_qc)
-        assert matrix_equal(qc_mat, pyzx_qc_mat, ignore_phase=True)
+        #result = execute([qc, pyzx_qc], simulator).result()
+        #qc_mat, pyzx_qc_mat = result.get_unitary(qc), result.get_unitary(pyzx_qc)
+        #assert matrix_equal(qc_mat, pyzx_qc_mat, ignore_phase=True)
         #print(pyzx_qc.qasm())
-        #print(best_qc.qasm())
+        #print(both_qc.qasm())
+        if len(names) > 0:
+            fo = open('outputqasms/pyzx/'+names[i]+'.qasm','w+')
+            fo.write(pyzx_qc.qasm())
+            fo.close()
+            fo = open('outputqasms/opt2/'+names[i]+'.qasm','w+')
+            fo.write(opt2_qc.qasm())
+            fo.close()
+            fo = open('outputqasms/both/'+names[i]+'.qasm','w+')
+            fo.write(both_qc.qasm())
+            fo.close()
 
     pickle.dump(now_dict, open('now_dict_pickles/' + benchmarkname + '/' + time_str + '.p', 'wb'))
     [print(key, ':\n', value) for key, value in now_dict.items()]

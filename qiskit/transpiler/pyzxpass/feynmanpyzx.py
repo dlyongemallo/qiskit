@@ -19,17 +19,17 @@ from feynmanqasms import qasmfiles
 from pyzxbenchmark import pyzxbenchmark
 from qiskit import QuantumCircuit
 
-qasms = []
 qcs = []
+names = []
 for f in qasmfiles:
     fo = open(f)
     qasm = fo.read()
-    qasms = qasms + [qasm]
+    fo.close()
+    names = names + [f[13:-5]]
     qc = QuantumCircuit().from_qasm_str(qasm)
     print(fo.name, ": ", qc.size(), "gates")
-    qcs = qcs + [qc]
-
-now_dict = pyzxbenchmark(qcs, "fm")
+    #qcs = qcs + [qc]
+    now_dict = pyzxbenchmark([qc], "fm", names=[f[13:-5]])
 
 if __name__ == '__main__':
     pass
