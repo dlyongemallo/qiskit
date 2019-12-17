@@ -56,6 +56,8 @@ def pyzxbenchmark(qcs, benchmarkname, alwaysDecompose=False):
         result = execute([qc, pyzx_qc], simulator).result()
         qc_mat, pyzx_qc_mat = result.get_unitary(qc), result.get_unitary(pyzx_qc)
         assert matrix_equal(qc_mat, pyzx_qc_mat, ignore_phase=True)
+        #print(pyzx_qc.qasm())
+        #print(best_qc.qasm())
 
     pickle.dump(now_dict, open('now_dict_pickles/' + benchmarkname + '/' + time_str + '.p', 'wb'))
     [print(key, ':\n', value) for key, value in now_dict.items()]
