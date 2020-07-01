@@ -8,6 +8,7 @@ Qiskit Terra documentation
 
   API References <apidocs/terra>
   Circuit Library <apidocs/circuit_library>
+  Inheritance diagram <apidocs/inheritance>
   Release Notes <release_notes>
 
 .. Hiding - Indices and tables
