@@ -81,7 +81,7 @@ load external plugins via corresponding entry points.
      - ``qiskit.transpiler.translation``
      - ``translator``, ``synthesis``, ``unroller``
      - The output of this stage is expected to have every operation be a native
-        instruction on the target backend.
+       instruction on the target backend.
    * - ``optimization``
      - ``qiskit.transpiler.optimization``
      - ``default``
@@ -128,7 +128,7 @@ and falls back to using :class:`~.TrivialLayout` if
                     VF2Layout(
                         coupling_map=pass_manager_config.coupling_map,
                         properties=pass_manager_config.backend_properties,
-                        max_trials=optimization_level * 10 + 1
+                        max_trials=optimization_level * 10 + 1,
                         target=pass_manager_config.target
                     )
                 ]
